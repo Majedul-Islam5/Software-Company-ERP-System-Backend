@@ -5,11 +5,11 @@ import { HrModule } from './hr/hr.module';
 import { ProjectManagerController } from './project_manager/projectManager.controller';
 import { ProjectManagerModule } from './project_manager/projectManager.module';
 import { ProjectManagerService } from './project_manager/projectManager.service';
-
+import { adminModule } from './Admin/admin.module';
 
 @Module({
-  imports: [HrModule,ProjectManagerModule],
-  controllers: [AppController,ProjectManagerController],
-  providers: [AppService,ProjectManagerService],
+  imports: [HrModule, ProjectManagerModule, adminModule],
+  controllers: [AppController, ProjectManagerController],
+  providers: [AppService, ProjectManagerService],
 })
 export class AppModule {}

@@ -1,0 +1,62 @@
+[
+  {
+    "uid": 1,
+    "name": "Zihan, MD. Zihaul ISlam",
+    "email": "Zihanislam231@gmail.com",
+    "role": "admin"
+  },
+  {
+    "uid": 2,
+    "name": "Sadia Rahman",
+    "email": "sadia.rahman@example.com",
+    "role": "hr"
+  },
+  {
+    "uid": 3,
+    "name": "Tanvir Hasan",
+    "email": "tanvir.hasan@example.com",
+    "role": "pm"
+  },
+  {
+    "uid": 4,
+    "name": "Mehedi Hasan",
+    "email": "mehedi.hasan@example.com",
+    "role": "dev"
+  },
+  {
+    "uid": 5,
+    "name": "Sumaiya Noor",
+    "email": "sumaiya.noor@example.com",
+    "role": "dev"
+  },
+  {
+    "uid": 6,
+    "name": "Farhan Islam",
+    "email": "farhan.islam@example.com",
+    "role": "pm"
+  },
+  {
+    "uid": 7,
+    "name": "Mim Chowdhury",
+    "email": "mim.chowdhury@example.com",
+    "role": "hr"
+  },
+  {
+    "uid": 8,
+    "name": "Shakib Rahman",
+    "email": "shakib.rahman@example.com",
+    "role": "dev"
+  },
+  {
+    "uid": 9,
+    "name": "Nusrat Jahan",
+    "email": "nusrat.jahan@example.com",
+    "role": "dev"
+  },
+  {
+    "uid": 10,
+    "name": "Rafiul Karim",
+    "email": "rafiul.karim@example.com",
+    "role": "dev"
+  }
+]
