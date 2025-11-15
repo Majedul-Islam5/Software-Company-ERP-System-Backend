@@ -1,8 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
-import { ProjectCreateDTO } from './projectCreateDTO';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UploadedFile, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ProjectManagerService } from './projectManager.service';
 import { ProjectUpdateDTO } from './projectUpdateDTO';
 import { ProjectUpdateStatusDTO } from './projectUpdateStatusDTO';
+import { ProjectCreateDTO } from './projectCreateDTO';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage, MulterError } from 'multer';
+import { UpdateProfileDTO } from './updateProjectManagerProfileDTO';
+
 
 
 @Controller("project")
@@ -12,7 +16,8 @@ export class ProjectManagerController {
 //   PROJECT RELATED ROUTES
 
   @Post("create")
-  postProjectDetails(@Body()projectData:ProjectCreateDTO):object{
+  @UsePipes(new ValidationPipe())
+  postProjectDetails(@Body()projectData: ProjectCreateDTO):object{
       return this.projectManagerService.postProjectDetails(projectData)
   }
   @Get("allProject")
@@ -36,6 +41,12 @@ export class ProjectManagerController {
     return this.projectManagerService.updateProjectStatus(updateStatus,id);
   }
 
+  @Put("updateProfile/:id")
+  @UsePipes(new ValidationPipe())
+  updateUserInfo(@Body()userInfo:UpdateProfileDTO,@Param("id")id:string):object{
+    return this.projectManagerService.updateUserInfo(userInfo,id)
+  }
+
   @Delete(":id")
   deleteProject(@Param("id")id:string): object {
     return this.projectManagerService.deleteProject(id);
@@ -44,9 +55,33 @@ export class ProjectManagerController {
 //   REPORT RELATED ROUTES
 
    @Post("report")
-  uploadSRSDocument(@Query("id")id:string): object {
-    return this.projectManagerService.uploadSRSDocument(id);
+    @UseInterceptors(FileInterceptor('report', {
+      fileFilter: (req, file, cb) => {
+       
+        if (file.originalname.match(/^.*\.(pdf)$/)) {
+          cb(null, true);
+        } else {
+          cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'report'), false);
+        }
+      },
+      limits: { fileSize: 1024*1024*10 }, 
+      storage: diskStorage({
+        destination: './srs-report',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + file.originalname;
+          cb(null, uniqueSuffix);
+        },
+      }),
+    }),
+)
+  uploadSRSDocument(@Query("id")id:string,@UploadedFile() file: Express.Multer.File): object {
+    return this.projectManagerService.uploadSRSDocument(id,file);
   }
+
+   @Get('/srs-document/:name')
+ getImages(@Param('name') name, @Res() res) {
+ res.sendFile(name,{ root: './srs-report' })
+ }
 
    @Delete("report/:id")
   deleteSRSDocument(@Param("id")id:string): object {
