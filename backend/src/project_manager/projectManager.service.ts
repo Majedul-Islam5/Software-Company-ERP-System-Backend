@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ProjectCreateDTO, ProjectStatus } from './projectCreateDTO';
 import { ProjectUpdateDTO } from './projectUpdateDTO';
 import { ProjectUpdateStatusDTO } from './projectUpdateStatusDTO';
+import { UpdateProfileDTO } from './updateProjectManagerProfileDTO';
 
 @Injectable()
 export class ProjectManagerService {
@@ -50,6 +51,14 @@ export class ProjectManagerService {
     }
   }
 
+  updateUserInfo(updateInfo:UpdateProfileDTO,id:string):object{
+    return {
+        success:true,
+        message:`Information of ${id} has been updated`,
+        updateInfo 
+    }
+  }
+
 
   deleteProject(id:string):object{
     return {
@@ -60,10 +69,11 @@ export class ProjectManagerService {
 
 //   REPORT RELATED SERVICES
 
-  uploadSRSDocument(id:string):object{
+  uploadSRSDocument(id:string,report:Express.Multer.File):object{
     return {
         success:true,
         message:`Report of ${id} project has been uploaded`,  
+        report
     }
   }
 
