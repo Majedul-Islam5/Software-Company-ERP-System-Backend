@@ -1,68 +1,64 @@
+import { IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Length, Matches } from "class-validator";
+import { Gender, Status } from "./employee.dto";
 import { Transform, Type } from "class-transformer";
-import { Contains, IsDate, IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, IsString, Length, Matches, MinLength } from "class-validator";
-
-export enum Gender {
-  Male = 'male',
-  Female = 'female',
-}
-
-export enum Status {
-  Active = 'active',
-  InActive = 'inactive',
-}
-
-export class employeeData{
+export class employeeUpdate{
 
     @IsNumber()
     @IsNotEmpty({ message: 'id cannot be empty' })
+    @IsOptional()
     id:number;
 
     @IsString()
     @IsNotEmpty({ message: 'Name cannot be empty' })
-    fullname:string;
+    @IsOptional()
+    fullname?:string;
 
     @IsString()
     @IsNotEmpty({ message: 'password cannot be empty' })
-    @MinLength(6,{message:"password must be atleast of length 6"})
-    @Matches(/[A-Z]+/)
-    password:string;
+    @IsOptional()
+    password?:string;
 
     @IsString()
     @IsNotEmpty({ message: 'email cannot be empty' })
-    @Contains("aiub.edu",{ message: 'email must contain aiub.edu domain' })
-    email:string;
+    @IsOptional()
+    email?:string;
 
     @IsString()
     @IsNotEmpty({ message: 'user role cannot be empty' })
-    role:string;
+    @IsOptional()
+    role?:string;
 
     @IsNotEmpty({ message: 'gender cannot be empty' })
-    @IsEnum(Gender,{ message: 'Invalid Gender' })
+    @IsEnum(Gender,{ message: 'Gender must be either Male or Female' })
+    @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? value.toLowerCase() : value), { toClassOnly: true })
-    gender:Gender;
+    gender?:string;
 
     @IsNotEmpty({ message: 'Status cannot be empty' })
     @IsEnum(Status,{ message: 'Invalid Status' })
+    @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? value.toLowerCase() : value), { toClassOnly: true })
-    status:Status;
+    status?:Status;
 
     @IsNotEmpty({ message: 'joining date cannot be empty' })
     @IsDate()
     @Type(() => Date)
-    joindate:Date;
+    @IsOptional()
+    joindate?:Date;
 
     @IsNumber()
-    @IsNotEmpty({ message: 'salary cannot be empty' })
-    salary:number;
+    @IsOptional()
+    salary?:number;
 
     @IsNumber()
-    @IsNotEmpty({ message: 'salary cannot be empty' })
-    age:number;
-
+    @IsOptional()
+    age?:number;
 
     @IsString()
-    @Matches(/^[0-9]+$/,{ message: 'phone number can contain digits only' })
-    @Length(11,11,{ message: 'phone number can contain 11 digits only' })
+    @Matches(/^[0-9]+$/)
+    @Length(11)
+    @IsOptional()
     @IsNotEmpty({ message: 'phone number cannot be empty' })
-    phone:string;
+    phone?:string;
+
 }

@@ -1,6 +1,7 @@
-import { Controller, Get ,Post,Delete,Put,Patch, Param,Query, Body } from '@nestjs/common';
+import { Controller, Get ,Post,Delete,Put,Patch, Param,Query, Body, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
 import { HrService } from './hr.service';
-import { employeeData } from './employee.dto';
+import { employeeData, Status } from './employee.dto';
+import { employeeUpdate } from './employeeUpdate.dto';
 
 @Controller("hr")
 export class HrController {
@@ -12,7 +13,7 @@ export class HrController {
   }
 
   @Get("employee/:id")
-  getEmployeeById(@Param('id') id:number): object {
+  getEmployeeById(@Param('id', ParseIntPipe) id:number): object {
     return this.hrService.getEmployeeById(id);
   }
 
@@ -27,22 +28,37 @@ export class HrController {
   }
 
   @Post("employee")
-  createEmp(@Body() empData:employeeData):object{  //service eo employeeData use korbo or object
+  @UsePipes(new ValidationPipe())
+  createEmp(@Body() empData:employeeData):object{  
     return this.hrService.createEmp(empData);
   }
 
   @Delete("employee/:id")
-  deleteEmp(@Param('id') id:number): object {
+  deleteEmp(@Param('id', ParseIntPipe) id:number): object {
     return this.hrService.deleteEmp(id);
   }
 
   @Put("employee/:id")
-  updateEmp(@Param('id') id: number,@Body() empData:employeeData):object{  //update same dto use korle sob info required?
-    return this.hrService.updateEmp(id,empData);
+  @UsePipes(new ValidationPipe())
+  updateEmp(@Param('id', ParseIntPipe) id: number,@Body() empUpdate:employeeUpdate):object{  
+    return this.hrService.updateEmp(id,empUpdate);
   }
 
   @Patch("leaves/:id")
-  updateLeave(@Param('id') id: number):object{  
+  updateLeave(@Param('id', ParseIntPipe) id: number):object{  
     return this.hrService.updateLeave(id);
   }
+
+/////addiotional
+  @Get("age/:val")
+  getAge(@Param('val') val:number):object{  
+    return this.hrService.getAge(val);
+  }
+
+  @Get("Status/:value")
+  getStatus(@Param('value') value:Status):object{  
+    return this.hrService.getStatus(value);
+  }
+
+
 }
