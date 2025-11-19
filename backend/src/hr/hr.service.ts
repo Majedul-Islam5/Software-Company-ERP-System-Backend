@@ -4,19 +4,28 @@ import { employeeUpdate } from './employeeUpdate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { EmployeeInfo } from './employee.entity';
+import { error } from 'console';
 
 @Injectable()
 export class HrService {
 
-
   constructor(@InjectRepository(EmployeeInfo) private employeeInfoRepo:Repository<EmployeeInfo>){}
 
-  getEmployee(): object {
-    return {id:"employee info"};
+  async getEmployee(): Promise<employeeData[]> {
+    return this.employeeInfoRepo.find();
   }
 
-  getEmployeeById(id:number): object {
-    return {id:"employee info"};
+  async getEmployeeById(id:number): Promise<employeeData|object> {
+    const emp=await this.employeeInfoRepo.findOneBy({id:id});
+    if(!emp){
+      return {message:"not found employee"}
+    }
+    else
+    {
+      return emp;
+    }
+    
+    
   }
 
   async createEmp(empData:employeeData):Promise<employeeData>{
@@ -35,6 +44,7 @@ export class HrService {
   }
 
   deleteEmp(id:number):object{
+    this.employeeInfoRepo.delete({id:id});
     return {message:"employee deleted"};
   }
 

@@ -1,5 +1,5 @@
 import { Transform, Type } from "class-transformer";
-import { Contains, IsDate, IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, IsString, Length, Matches, MinLength } from "class-validator";
+import { Contains, IsDate, IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, IsString, Length, Matches, Min, MinLength } from "class-validator";
 
 export enum Gender {
   Male = 'male',
@@ -15,6 +15,7 @@ export class employeeData{
 
     @IsNumber()
     @IsNotEmpty({ message: 'id cannot be empty' })
+    @Min(0)
     id:number;
 
     @IsString()
@@ -53,10 +54,12 @@ export class employeeData{
 
     @IsNumber()
     @IsNotEmpty({ message: 'salary cannot be empty' })
+    @Min(0)
     salary:number;
 
     @IsNumber()
     @IsNotEmpty({ message: 'salary cannot be empty' })
+    @Min(0)
     age:number;
 
 

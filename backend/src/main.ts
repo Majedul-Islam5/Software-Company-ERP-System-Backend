@@ -7,9 +7,9 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true, // enables class-transformer transformations
+      transform: true, 
       transformOptions: {
-        enableImplicitConversion: true, // converts plain types to the target type
+        enableImplicitConversion: true, 
       },
     }),
   );

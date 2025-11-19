@@ -17,7 +17,7 @@ import { ConfigModule } from '@nestjs/config';
     port:5432,
     username:process.env.DB_USERNAME,
     password:process.env.DB_PASSWORD,
-    database:'testTask',
+    database:process.env.DB_NAME,
     autoLoadEntities:true,
     synchronize:true,
   }
