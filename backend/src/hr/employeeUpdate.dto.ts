@@ -3,30 +3,15 @@ import { Gender, Status } from "./employee.dto";
 import { Transform, Type } from "class-transformer";
 export class employeeUpdate{
 
-    @IsNumber()
-    @IsNotEmpty({ message: 'id cannot be empty' })
-    @IsOptional()
-    id:number;
-
     @IsString()
     @IsNotEmpty({ message: 'Name cannot be empty' })
     @IsOptional()
     fullname?:string;
 
     @IsString()
-    @IsNotEmpty({ message: 'password cannot be empty' })
-    @IsOptional()
-    password?:string;
-
-    @IsString()
     @IsNotEmpty({ message: 'email cannot be empty' })
     @IsOptional()
     email?:string;
-
-    @IsString()
-    @IsNotEmpty({ message: 'user role cannot be empty' })
-    @IsOptional()
-    role?:string;
 
     @IsNotEmpty({ message: 'gender cannot be empty' })
     @IsEnum(Gender,{ message: 'Gender must be either Male or Female' })

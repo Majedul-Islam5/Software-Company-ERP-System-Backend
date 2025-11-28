@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, Entity, OneToOne, PrimaryColumn } from "typeorm";
 import { Gender, Status } from "./employee.dto";
+import { userCredentials } from "./userInfo.entity";
 
 @Entity()
 export class EmployeeInfo{
@@ -9,15 +10,9 @@ export class EmployeeInfo{
 
     @Column({type:"varchar",length:100})
     fullname:string;
-
-    @Column()
-    password:string;
     
     @Column()
     email:string;
-
-    @Column()
-    role:string;
 
     @Column({type:"enum",enum:Gender})
     gender:Gender;
@@ -36,5 +31,16 @@ export class EmployeeInfo{
     
     @Column()
     phone:string;
-    
+
+    @Column()
+    userImage:string;
+
+    @BeforeInsert()
+    customId():void{
+        let id:number;
+        id=Math.floor(10000+Math.random()*90000); 
+        this.id=id;
+    }
+    @OneToOne(()=>userCredentials,usercredent=>usercredent.employeeInfo)
+    usercredent:userCredentials;
 }

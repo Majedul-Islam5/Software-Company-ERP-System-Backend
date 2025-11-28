@@ -1,19 +1,22 @@
-import { Controller, Get ,Post,Delete,Put,Patch, Param,Query, Body, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get ,Post,Delete,Put,Patch, Param,Query, Body, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { HrService } from './hr.service';
 import { employeeData, Status } from './employee.dto';
 import { employeeUpdate } from './employeeUpdate.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage, MulterError } from 'multer';
+import { userInformation } from './userInfo.dto';
 
 @Controller("hr")
-export class HrController {
-  constructor(private readonly hrService: HrService) {}
+export class HrController{
+  constructor(private readonly hrService: HrService){}
 
   @Get("employee")
-  getEmployee(): object {
+  getEmployee():object{
     return this.hrService.getEmployee();
   }
 
   @Get("employee/:id")
-  getEmployeeById(@Param('id', ParseIntPipe) id:number): object {
+  getEmployeeById(@Param('id',ParseIntPipe) id:number):object{
     return this.hrService.getEmployeeById(id);
   }
 
@@ -29,12 +32,39 @@ export class HrController {
 
   @Post("employee")
   @UsePipes(new ValidationPipe())
-  createEmp(@Body() empData:employeeData):object{  
-    return this.hrService.createEmp(empData);
+  @UseInterceptors(FileInterceptor('file',
+  {fileFilter: (req , file , cb )=>{
+      if(file.originalname.match(/\.(jpg|webp|png|jpeg)$/))
+          cb(null , true);
+      else
+      {
+        cb(new MulterError('LIMIT_UNEXPECTED_FILE', ' image'), false);
+      }
+  },
+  limits:{ fileSize: 3000000},
+    storage: diskStorage({
+    destination: './src/hr/assets',
+    filename: function(req , file , cb ){
+      cb(null, Date.now()+file.originalname)
+    },
+  })
+  }))
+  createEmp(@Body() empData:employeeData,@UploadedFile () file: Express.Multer.File):object{  
+    return this.hrService.createEmp(empData,file);
+  }
+
+  @Post("employeeCredential/:id")
+  createEmpCredential(@Param('id',ParseIntPipe) id:number,@Body() empCred:userInformation):object{  
+    return this.hrService.createEmpCredential(id,empCred);
   }
 
   @Delete("employee/:id")
-  deleteEmp(@Param('id', ParseIntPipe) id:number): object {
+  terminateEmp(@Param('id', ParseIntPipe) id:number) {
+    return this.hrService.terminateEmp(id);
+  }
+
+  @Delete("deleteEmployee/:id")
+  deleteEmp(@Param('id', ParseIntPipe) id:number) {
     return this.hrService.deleteEmp(id);
   }
 
@@ -50,10 +80,6 @@ export class HrController {
   }
 
 /////addiotional
-  @Get("age/:val")
-  getAge(@Param('val') val:number):object{  
-    return this.hrService.getAge(val);
-  }
 
   @Get("Status/:value")
   getStatus(@Param('value') value:Status):object{  

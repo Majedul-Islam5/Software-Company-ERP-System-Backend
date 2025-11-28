@@ -13,29 +13,15 @@ export enum Status {
 
 export class employeeData{
 
-    @IsNumber()
-    @IsNotEmpty({ message: 'id cannot be empty' })
-    @Min(0)
-    id:number;
-
     @IsString()
     @IsNotEmpty({ message: 'Name cannot be empty' })
     fullname:string;
 
-    @IsString()
-    @IsNotEmpty({ message: 'password cannot be empty' })
-    @MinLength(6,{message:"password must be atleast of length 6"})
-    @Matches(/[A-Z]+/)
-    password:string;
 
     @IsString()
     @IsNotEmpty({ message: 'email cannot be empty' })
-    @Contains("aiub.edu",{ message: 'email must contain aiub.edu domain' })
+    @Contains("nexabyte.tech",{ message: 'email must contain nexabyte.tech domain' })
     email:string;
-
-    @IsString()
-    @IsNotEmpty({ message: 'user role cannot be empty' })
-    role:string;
 
     @IsNotEmpty({ message: 'gender cannot be empty' })
     @IsEnum(Gender,{ message: 'Invalid Gender' })
