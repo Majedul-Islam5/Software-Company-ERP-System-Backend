@@ -1,6 +1,7 @@
 import { BeforeInsert, Column, CreateDateColumn, Entity, OneToOne, PrimaryColumn } from "typeorm";
 import { Gender, Status } from "./employee.dto";
 import { userCredentials } from "./userInfo.entity";
+import { BoardingCheckList } from "./boarding.entity";
 
 @Entity()
 export class EmployeeInfo{
@@ -11,7 +12,7 @@ export class EmployeeInfo{
     @Column({type:"varchar",length:100})
     fullname:string;
     
-    @Column()
+    @Column({type:"varchar",length:100,unique:true })
     email:string;
 
     @Column({type:"enum",enum:Gender})
@@ -43,4 +44,7 @@ export class EmployeeInfo{
     }
     @OneToOne(()=>userCredentials,usercredent=>usercredent.employeeInfo)
     usercredent:userCredentials;
+
+    @OneToOne(()=>BoardingCheckList,boardingCheckList=>boardingCheckList.employeeInfo)
+    boardingCheckList:BoardingCheckList;
 }

@@ -4,15 +4,18 @@ import { employeeUpdate } from './employeeUpdate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { EmployeeInfo } from './employee.entity';
-import { error } from 'console';
+import * as bcrypt from 'bcrypt'
 import { userInformation } from './userInfo.dto';
 import { userCredentials } from './userInfo.entity';
+import { BoardingCheck } from './boarding.dto';
+import { BoardingCheckList } from './boarding.entity';
 
 @Injectable()
 export class HrService {
 
   constructor(@InjectRepository(EmployeeInfo) private employeeInfoRepo:Repository<EmployeeInfo>,
-  @InjectRepository(userCredentials) private userCredent:Repository<userCredentials>
+  @InjectRepository(userCredentials) private userCredent:Repository<userCredentials>,
+  @InjectRepository(BoardingCheckList) private boardingCheckList:Repository<BoardingCheckList>
   ){}
 
   async getEmployee(): Promise<employeeData[]> {
@@ -42,9 +45,12 @@ export class HrService {
     if(!emp){
       throw new NotFoundException('Employee ID does not exist')
     }
+    const salt= await bcrypt.genSalt();
+    const hassedpassword=await bcrypt.hash(empCred.password,salt);
+    empCred.password=hassedpassword;
     const emplo=this.userCredent.create({...empCred,employeeInfo:emp})
-
     return this.userCredent.save(emplo);
+    //const isMatch = await bcrypt.compare(password(user_input_string), dbpassword);
   }
 
   async updateEmp(id :number,empUpdate:employeeUpdate):Promise<employeeData|null>{
@@ -64,7 +70,7 @@ export class HrService {
       throw new NotFoundException('Employee ID does not exist')
     }
     await this.employeeInfoRepo.update(id, {status:Status.InActive});
-    this.userCredent.delete(id);
+    this.userCredent.delete({employeeInfo:{id:id}});
     return null;
   }
 
@@ -78,6 +84,37 @@ export class HrService {
     }
     this.employeeInfoRepo.delete(id);
     return null;
+  }
+
+  async createBoarding(id: number, boardData:BoardingCheck):Promise<BoardingCheck>{
+    const emp=await this.employeeInfoRepo.findOneBy({id:id});
+    if(!emp){
+      throw new NotFoundException('Employee ID does not exist')
+    }
+    const empBoard=this.boardingCheckList.create({...boardData,employeeInfo:emp})
+    return this.boardingCheckList.save(empBoard);
+  }
+
+  async showBoarding(id: number):Promise<BoardingCheck[]>{
+    const accessory=await this.boardingCheckList.find({where:{employeeInfo:{id:id}},relations: ['employeeInfo'],});
+    if(accessory.length===0){
+      throw new NotFoundException('Boarding Data not found')
+    }
+    return accessory;
+  }
+
+  async updateBoarding(id: number, boardData:BoardingCheck):Promise<BoardingCheck|null>{
+    const accessory=await this.boardingCheckList.findOne({select:{id:true},where:{employeeInfo:{id:id}},relations: ['employeeInfo'],});
+    if(!accessory){
+      throw new NotFoundException('Boarding Data not found')
+    }
+    const bId=accessory.id;
+    for(const key in boardData){
+      if(boardData[key]!==undefined){
+        await this.boardingCheckList.update({id:bId}, {[key]:boardData[key]});
+      }
+    }
+    return this.boardingCheckList.findOneBy({id:bId});
   }
 
   leaves():object{  

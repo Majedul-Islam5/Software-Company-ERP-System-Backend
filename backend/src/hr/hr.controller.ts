@@ -5,6 +5,7 @@ import { employeeUpdate } from './employeeUpdate.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
 import { userInformation } from './userInfo.dto';
+import { BoardingCheck } from './boarding.dto';
 
 @Controller("hr")
 export class HrController{
@@ -54,6 +55,7 @@ export class HrController{
   }
 
   @Post("employeeCredential/:id")
+  @UsePipes(new ValidationPipe())
   createEmpCredential(@Param('id',ParseIntPipe) id:number,@Body() empCred:userInformation):object{  
     return this.hrService.createEmpCredential(id,empCred);
   }
@@ -75,8 +77,26 @@ export class HrController{
   }
 
   @Patch("leaves/:id")
+  @UsePipes(new ValidationPipe())
   updateLeave(@Param('id', ParseIntPipe) id: number):object{  
     return this.hrService.updateLeave(id);
+  }
+
+  @Post("employee/onboarding/:id")
+  @UsePipes(new ValidationPipe())
+  createBoarding(@Param('id', ParseIntPipe) id: number,@Body() boardData:BoardingCheck):object{
+    return this.hrService.createBoarding(id,boardData);
+  }
+
+  @Get("employee/onboarding/:id")
+  showBoarding(@Param('id', ParseIntPipe) id: number):object{
+    return this.hrService.showBoarding(id);
+  }
+
+  @Put("employee/onboarding/:id")
+  @UsePipes(new ValidationPipe())
+  updateBoarding(@Param('id', ParseIntPipe) id: number,@Body() boardData:BoardingCheck):object{
+    return this.hrService.updateBoarding(id,boardData);
   }
 
 /////addiotional
