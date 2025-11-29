@@ -6,6 +6,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, MulterError } from 'multer';
 import { userInformation } from './userInfo.dto';
 import { BoardingCheck } from './boarding.dto';
+import { empSalary } from './salary.dto';
+import { empSalaryUpdate } from './salaryUpdate.dto';
 
 @Controller("hr")
 export class HrController{
@@ -97,6 +99,24 @@ export class HrController{
   @UsePipes(new ValidationPipe())
   updateBoarding(@Param('id', ParseIntPipe) id: number,@Body() boardData:BoardingCheck):object{
     return this.hrService.updateBoarding(id,boardData);
+  }
+
+  @Post("employee/salary/:id")
+  @UsePipes(new ValidationPipe())
+  createSalary(@Param('id', ParseIntPipe) id: number,@Body() employeeSalary:empSalary):object{
+    return this.hrService.createSalary(id,employeeSalary);
+  }
+
+  @Get("employee/salary/:id")
+  @UsePipes(new ValidationPipe())
+  showSalary(@Param('id', ParseIntPipe) id: number):object{
+    return this.hrService.showSalary(id);
+  }
+
+  @Put("employee/salary/:id")// using query for id throws number string error
+  @UsePipes(new ValidationPipe())
+  updateSalary(@Param('id',ParseIntPipe) id:number,@Query('month') month: string,@Query('year', ParseIntPipe) year: number,@Body() employeeSalaryUpdate:empSalaryUpdate):object{
+    return this.hrService.updateSalary(id,month,year,employeeSalaryUpdate);
   }
 
 /////addiotional

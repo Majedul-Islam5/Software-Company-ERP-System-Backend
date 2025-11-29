@@ -1,7 +1,8 @@
-import { BeforeInsert, Column, CreateDateColumn, Entity, OneToOne, PrimaryColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { Gender, Status } from "./employee.dto";
 import { userCredentials } from "./userInfo.entity";
 import { BoardingCheckList } from "./boarding.entity";
+import { SalaryInfo } from "./salary.entity";
 
 @Entity()
 export class EmployeeInfo{
@@ -47,4 +48,7 @@ export class EmployeeInfo{
 
     @OneToOne(()=>BoardingCheckList,boardingCheckList=>boardingCheckList.employeeInfo)
     boardingCheckList:BoardingCheckList;
+
+    @OneToMany(()=>SalaryInfo,SalaryInfo=>SalaryInfo.employeeInfo)
+    salaryInfo:SalaryInfo[];
 }

@@ -9,13 +9,17 @@ import { userInformation } from './userInfo.dto';
 import { userCredentials } from './userInfo.entity';
 import { BoardingCheck } from './boarding.dto';
 import { BoardingCheckList } from './boarding.entity';
+import { empSalary, Month } from './salary.dto';
+import { SalaryInfo } from './salary.entity';
+import { empSalaryUpdate } from './salaryUpdate.dto';
 
 @Injectable()
 export class HrService {
 
   constructor(@InjectRepository(EmployeeInfo) private employeeInfoRepo:Repository<EmployeeInfo>,
   @InjectRepository(userCredentials) private userCredent:Repository<userCredentials>,
-  @InjectRepository(BoardingCheckList) private boardingCheckList:Repository<BoardingCheckList>
+  @InjectRepository(BoardingCheckList) private boardingCheckList:Repository<BoardingCheckList>,
+  @InjectRepository(SalaryInfo) private salaryInfo:Repository<SalaryInfo>,
   ){}
 
   async getEmployee(): Promise<employeeData[]> {
@@ -37,7 +41,13 @@ export class HrService {
 
   async createEmp(empData:employeeData,file: Express.Multer.File):Promise<employeeData>{
     const empInfo=this.employeeInfoRepo.create({...empData,userImage:file.filename})
-    return this.employeeInfoRepo.save(empInfo);
+    try{
+      return await this.employeeInfoRepo.save(empInfo);
+    }
+    catch(error){
+      throw new BadRequestException("Same email already exists");
+    }
+    
   }
 
   async createEmpCredential(id:number,empCred:userInformation):Promise<userInformation>{  
@@ -49,7 +59,13 @@ export class HrService {
     const hassedpassword=await bcrypt.hash(empCred.password,salt);
     empCred.password=hassedpassword;
     const emplo=this.userCredent.create({...empCred,employeeInfo:emp})
-    return this.userCredent.save(emplo);
+    try{
+      return await this.userCredent.save(emplo);
+    }
+    catch(error){
+      throw new BadRequestException("Same email already exists");
+    }
+    
     //const isMatch = await bcrypt.compare(password(user_input_string), dbpassword);
   }
 
@@ -115,6 +131,58 @@ export class HrService {
       }
     }
     return this.boardingCheckList.findOneBy({id:bId});
+  }
+
+  async createSalary(id: number,employeeSalary:empSalary):Promise<empSalary>{
+    const emp=await this.employeeInfoRepo.findOneBy({id:id});
+    let total=0;
+    if(!emp){
+      throw new NotFoundException('Employee ID does not exist')
+    }
+    for(const key in employeeSalary){
+      if(employeeSalary[key]!==undefined){
+        if(key==="taxDeduction"){
+          total-=employeeSalary[key];
+          continue;
+        }
+        if(key==="month" || key==="year"){
+          continue;
+        }
+        total+=employeeSalary[key];
+      }
+    }
+    total+=emp.salary;
+    const empSalary=this.salaryInfo.create({...employeeSalary,basicsalary:emp.salary,totalSalary:total,employeeInfo:emp})
+    try{
+      return await this.salaryInfo.save(empSalary);
+    }
+    catch(error){
+      throw new BadRequestException('Salary record for this month and year already exists');
+    }
+    
+  }
+
+  async showSalary(id: number):Promise<empSalary[]>{
+    const sal:SalaryInfo[]=await this.salaryInfo.find({where:{employeeInfo:{id:id}}});
+    if(sal.length===0){
+      throw new NotFoundException('Salary Data not found')
+    }
+    return sal;
+  }
+
+  async updateSalary(id: number,month:string,year:number,employeeSalaryUpdate:empSalaryUpdate):Promise<empSalary|null>{
+    const monthEnum = Month[month.toUpperCase() as keyof typeof Month];
+    const salaryUp=await this.salaryInfo.findOne({select:{id:true},where:{employeeInfo:{id:id},month:monthEnum,year:year}});
+    if(!salaryUp){
+      throw new NotFoundException('Salary Data not found')
+    }
+    const sId=salaryUp.id;
+    for(const key in employeeSalaryUpdate){
+      if(employeeSalaryUpdate[key]!==undefined){
+        await this.salaryInfo.update({id:sId}, {[key]:employeeSalaryUpdate[key]});
+      }
+    }
+    return await this.salaryInfo.findOneBy({id:sId});
   }
 
   leaves():object{  
