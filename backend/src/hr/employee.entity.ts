@@ -3,6 +3,7 @@ import { Gender, Status } from "./employee.dto";
 import { userCredentials } from "./userInfo.entity";
 import { BoardingCheckList } from "./boarding.entity";
 import { SalaryInfo } from "./salary.entity";
+import { AnnouncementInfo } from "./announcement.entity";
 
 @Entity()
 export class EmployeeInfo{
@@ -49,6 +50,9 @@ export class EmployeeInfo{
     @OneToOne(()=>BoardingCheckList,boardingCheckList=>boardingCheckList.employeeInfo)
     boardingCheckList:BoardingCheckList;
 
-    @OneToMany(()=>SalaryInfo,SalaryInfo=>SalaryInfo.employeeInfo)
+    @OneToMany(()=>SalaryInfo,salaryInfo=>salaryInfo.employeeInfo)
     salaryInfo:SalaryInfo[];
+
+    @OneToMany(()=>AnnouncementInfo,announcementInfo=>announcementInfo.hrInfo)
+    announcementInfo:AnnouncementInfo[];
 }

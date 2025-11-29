@@ -5,13 +5,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { EmployeeInfo } from './employee.entity';
 import * as bcrypt from 'bcrypt'
-import { userInformation } from './userInfo.dto';
+import { Role, userInformation } from './userInfo.dto';
 import { userCredentials } from './userInfo.entity';
 import { BoardingCheck } from './boarding.dto';
 import { BoardingCheckList } from './boarding.entity';
 import { empSalary, Month } from './salary.dto';
 import { SalaryInfo } from './salary.entity';
 import { empSalaryUpdate } from './salaryUpdate.dto';
+import { announcementData } from './annoucement.dto';
+import { AnnouncementInfo } from './announcement.entity';
+import { announcementUpdate } from './announcementUpdate.dto';
 
 @Injectable()
 export class HrService {
@@ -20,6 +23,7 @@ export class HrService {
   @InjectRepository(userCredentials) private userCredent:Repository<userCredentials>,
   @InjectRepository(BoardingCheckList) private boardingCheckList:Repository<BoardingCheckList>,
   @InjectRepository(SalaryInfo) private salaryInfo:Repository<SalaryInfo>,
+  @InjectRepository(AnnouncementInfo) private announcementInfo:Repository<AnnouncementInfo>,
   ){}
 
   async getEmployee(): Promise<employeeData[]> {
@@ -29,7 +33,7 @@ export class HrService {
   async getEmployeeById(id:number): Promise<employeeData|object> {
     const emp=await this.employeeInfoRepo.findOneBy({id:id});
     if(!emp){
-      return {message:"not found employee"}
+      throw new NotFoundException("Employee data is not found")
     }
     else
     {
@@ -189,8 +193,40 @@ export class HrService {
     return {message:"all leaves"};
   }
 
-  showAnnouncements():object{  
-    return {message:"all announcements"};
+  async createAnnouncements(id:number,announce:announcementData):Promise<announcementData>{
+    const emp=await this.employeeInfoRepo.findOneBy({id:id});
+    if(!emp){
+      throw new NotFoundException('Employee ID does not exist')
+    }
+    const hremp= await this.userCredent.findOne({where:{role:Role.HR,employeeInfo:{id:emp.id}}})
+    if(!hremp){
+      throw new BadRequestException("Only hr to post annoucement")
+    }
+    const announcement=await this.announcementInfo.create({...announce,hrInfo:emp});
+    return this.announcementInfo.save(announcement);
+  }
+
+  async showAnnouncements(id:number):Promise<announcementData[]>{  
+    return await this.announcementInfo.find({where:{hrInfo:{id:id}}});
+  }
+
+  async updateAnnouncements(id:number,announce:announcementUpdate):Promise<announcementData|null>{  
+    const announceMent=await this.announcementInfo.findOneBy({id:id});
+    for(const key in announce){
+      if(announce[key]!==undefined){
+        await this.announcementInfo.update(id, {[key]:announce[key]});
+      }
+    }
+    return this.announcementInfo.findOneBy({id});
+  }
+
+  async deleteAnnouncements(id:number):Promise<null>{
+    const announceMent=await this.announcementInfo.findOneBy({id:id});
+    if(!announceMent){
+      throw new NotFoundException("Announcement not found")
+    }
+    await this.announcementInfo.delete(id);
+    return null;
   }
 
   updateLeave(id: number):object{  

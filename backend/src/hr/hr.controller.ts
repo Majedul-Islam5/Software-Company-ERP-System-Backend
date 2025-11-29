@@ -8,6 +8,8 @@ import { userInformation } from './userInfo.dto';
 import { BoardingCheck } from './boarding.dto';
 import { empSalary } from './salary.dto';
 import { empSalaryUpdate } from './salaryUpdate.dto';
+import { announcementData } from './annoucement.dto';
+import { announcementUpdate } from './announcementUpdate.dto';
 
 @Controller("hr")
 export class HrController{
@@ -28,9 +30,25 @@ export class HrController{
     return this.hrService.leaves();
   }
 
-  @Get("announcements")
-  showAnnouncements():object{  
-    return this.hrService.showAnnouncements();
+
+  @Post("announcements/:id")
+  createAnnouncements(@Param('id',ParseIntPipe) id:number,@Body() announce:announcementData):object{  
+    return this.hrService.createAnnouncements(id,announce);
+  }
+
+  @Get("announcements/:id")
+  showAnnouncements(@Param('id',ParseIntPipe) id:number):object{  
+    return this.hrService.showAnnouncements(id);
+  }
+
+  @Put("announcements/:id")
+  updateAnnouncements(@Param('id',ParseIntPipe) id:number,@Body() announce:announcementUpdate):object{  
+    return this.hrService.updateAnnouncements(id,announce);
+  }
+
+  @Delete("announcements/:id")
+  deleteAnnouncements(@Param('id',ParseIntPipe) id:number):object{  
+    return this.hrService.deleteAnnouncements(id);
   }
 
   @Post("employee")
@@ -119,12 +137,10 @@ export class HrController{
     return this.hrService.updateSalary(id,month,year,employeeSalaryUpdate);
   }
 
-/////addiotional
+/////additional
 
   @Get("Status/:value")
   getStatus(@Param('value') value:Status):object{  
     return this.hrService.getStatus(value);
   }
-
-
 }
