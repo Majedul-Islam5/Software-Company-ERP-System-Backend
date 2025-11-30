@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { employeeData, Status } from './employee.dto';
 import { employeeUpdate } from './employeeUpdate.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +15,8 @@ import { empSalaryUpdate } from './salaryUpdate.dto';
 import { announcementData } from './annoucement.dto';
 import { AnnouncementInfo } from './announcement.entity';
 import { announcementUpdate } from './announcementUpdate.dto';
+import { AuthService } from './auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class HrService {
@@ -24,7 +26,36 @@ export class HrService {
   @InjectRepository(BoardingCheckList) private boardingCheckList:Repository<BoardingCheckList>,
   @InjectRepository(SalaryInfo) private salaryInfo:Repository<SalaryInfo>,
   @InjectRepository(AnnouncementInfo) private announcementInfo:Repository<AnnouncementInfo>,
+  private readonly authService:AuthService,
+  private jwtService:JwtService
   ){}
+
+  async signIn(info:userInformation):Promise<{ access_token: string }>{
+    const {email,password}=info;
+    const user=await this.userCredent.findOneBy({email:email})
+    if(!user){
+      throw new NotFoundException("user not found")
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(isMatch===false){
+      throw new UnauthorizedException("password does not match")
+    }
+    else{
+      const userval={
+        id:user.id,
+        email:email,
+        //password:password
+      }
+      const payload = userval;
+      return{
+        access_token: await this.jwtService.signAsync(payload),
+      };
+    }
+  }
+
+  logout(info:userInformation):object{
+    return {message:"logout"};
+  }
 
   async getEmployee(): Promise<employeeData[]> {
     return this.employeeInfoRepo.find();
@@ -69,8 +100,6 @@ export class HrService {
     catch(error){
       throw new BadRequestException("Same email already exists");
     }
-    
-    //const isMatch = await bcrypt.compare(password(user_input_string), dbpassword);
   }
 
   async updateEmp(id :number,empUpdate:employeeUpdate):Promise<employeeData|null>{
