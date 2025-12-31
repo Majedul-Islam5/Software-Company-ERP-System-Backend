@@ -17,6 +17,9 @@ import { AnnouncementInfo } from './announcement.entity';
 import { announcementUpdate } from './announcementUpdate.dto';
 import { AuthService } from './auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { EmailService } from './email/email.service';
+import { EmailData } from './email/email.dto';
+import { userInformationUpdate } from './userInfoUpdate.dto';
 
 @Injectable()
 export class HrService {
@@ -27,7 +30,8 @@ export class HrService {
   @InjectRepository(SalaryInfo) private salaryInfo:Repository<SalaryInfo>,
   @InjectRepository(AnnouncementInfo) private announcementInfo:Repository<AnnouncementInfo>,
   private readonly authService:AuthService,
-  private jwtService:JwtService
+  private jwtService:JwtService,
+  private readonly emailService:EmailService
   ){}
 
   async signIn(info:userInformation):Promise<{ access_token: string }>{
@@ -57,8 +61,19 @@ export class HrService {
     return {message:"logout"};
   }
 
+  sendEmail(mail:EmailData){
+    const {to,subject,message}=mail;
+    return this.emailService.sendEmail(to,subject,message);
+  }
+
   async getEmployee(): Promise<employeeData[]> {
-    return this.employeeInfoRepo.find();
+    try{
+      return this.employeeInfoRepo.find();
+    }
+    catch(error){
+      throw new error("Error occured");
+    }
+    
   }
 
   async getEmployeeById(id:number): Promise<employeeData|object> {
@@ -66,12 +81,9 @@ export class HrService {
     if(!emp){
       throw new NotFoundException("Employee data is not found")
     }
-    else
-    {
+    else{
       return emp;
     }
-    
-    
   }
 
   async createEmp(empData:employeeData,file: Express.Multer.File):Promise<employeeData>{
@@ -102,13 +114,33 @@ export class HrService {
     }
   }
 
-  async updateEmp(id :number,empUpdate:employeeUpdate):Promise<employeeData|null>{
-    for(const key in empUpdate){
+  async updateEmpCredential(id:number,empCredUpdate:userInformationUpdate):Promise<userInformation|null>{  
+    const emp=await this.employeeInfoRepo.findOneBy({id:id});
+    if(!emp){
+      throw new NotFoundException('Employee ID does not exist')
+    }
+    const empCreden=await this.userCredent.findOneBy({employeeInfo:{id:id}});
+    if(!empCreden){
+      throw new NotFoundException('Employee Credentials not found')
+    }
+    if(empCredUpdate.password!=undefined){
+      const salt= await bcrypt.genSalt();
+      const hassedpassword=await bcrypt.hash(empCredUpdate.password,salt);
+      empCredUpdate.password=hassedpassword;
+    }
+    for(const key in empCredUpdate){
+      if(empCredUpdate[key]!==undefined){
+        await this.userCredent.update({id:empCreden.id}, {[key]:empCredUpdate[key]});
+      }
+    }
+    return this.userCredent.findOneBy({id:empCreden.id});
+  }
 
+    async updateEmp(id :number,empUpdate:employeeUpdate):Promise<employeeData|null>{
+    for(const key in empUpdate){
       if(empUpdate[key]!==undefined){
         await this.employeeInfoRepo.update(id, {[key]:empUpdate[key]});
       }
-
     }
     return this.employeeInfoRepo.findOneBy({id:id});
   }
@@ -215,6 +247,19 @@ export class HrService {
         await this.salaryInfo.update({id:sId}, {[key]:employeeSalaryUpdate[key]});
       }
     }
+    let total=0;
+    for(const key in this.salaryInfo){
+      if(key==="month" || key==="year"){
+        continue;
+      }
+      if(key==="taxDeduction"){
+        total-=this.salaryInfo[key];
+        continue;
+      }
+      total+=this.salaryInfo[key];
+    }
+    await this.salaryInfo.update({id:sId}, {totalSalary:total});
+
     return await this.salaryInfo.findOneBy({id:sId});
   }
 

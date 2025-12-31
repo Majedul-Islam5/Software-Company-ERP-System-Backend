@@ -11,6 +11,8 @@ import { empSalaryUpdate } from './salaryUpdate.dto';
 import { announcementData } from './annoucement.dto';
 import { announcementUpdate } from './announcementUpdate.dto';
 import { AuthGuard } from './auth/auth.guard';
+import { EmailData } from './email/email.dto';
+import { userInformationUpdate } from './userInfoUpdate.dto';
 
 @Controller("hr")
 export class HrController{
@@ -24,6 +26,24 @@ export class HrController{
   @Post("logout")
   logout(@Body() info:userInformation):object{
     return this.hrService.logout(info);
+  }
+
+  /*{
+  "to":"mohammadanas241@gmail.com",
+  "subject":"Welcome to the Company – Your ERP Login Credentials",
+  "message":"Hi  Anas,\nWelcome to [Nexabyte Tech Software Company]!\n\nYour portal login credentials are:\n\tUsername: {username}\n\tTemporary Password: {password}\n\nLogin here: Company Portal\nPlease change your password after your first login.\n\nBest regards,\nHR Team"
+  }*/
+
+  /*{
+  "to":"mohammadanas241@gmail.com",
+  "subject":"Welcome to the Company – Your ERP Login Credentials",
+  "message":"Hi Anas,\nWelcome to [Nexabyte Tech Software Company]!\n\nYour portal login credentials are:\n\tUsername: {username}\n\tTemporary Password: {password}\n\nLogin here: <a href=\"nexabyte.com\">Company Portal</a>\nPlease change your password after your first login.\n\nBest regards,\nHR Team"
+  }*/
+
+
+  @Post('email')
+  sendEmail(@Body() mail:EmailData):object{
+    return this.hrService.sendEmail(mail);
   }
 
   @Get("employee")
@@ -98,6 +118,13 @@ export class HrController{
   @UsePipes(new ValidationPipe())
   createEmpCredential(@Param('id',ParseIntPipe) id:number,@Body() empCred:userInformation):object{  
     return this.hrService.createEmpCredential(id,empCred);
+  }
+
+  @Put("employeeCredential/:id")
+  @UseGuards(AuthGuard)
+  @UsePipes(new ValidationPipe())
+  updateEmpCredential(@Param('id',ParseIntPipe) id:number,@Body() empCredUpdate:userInformationUpdate):object{  
+    return this.hrService.updateEmpCredential(id,empCredUpdate);
   }
 
   @Delete("employee/:id")

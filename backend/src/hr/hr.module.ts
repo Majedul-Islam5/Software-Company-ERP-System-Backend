@@ -8,9 +8,10 @@ import { BoardingCheckList } from './boarding.entity';
 import { SalaryInfo } from './salary.entity';
 import { AnnouncementInfo } from './announcement.entity';
 import { AuthModule } from './auth/auth.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([EmployeeInfo]),TypeOrmModule.forFeature([userCredentials]),TypeOrmModule.forFeature([BoardingCheckList]),TypeOrmModule.forFeature([SalaryInfo]),TypeOrmModule.forFeature([AnnouncementInfo]),AuthModule],
+  imports: [TypeOrmModule.forFeature([EmployeeInfo]),TypeOrmModule.forFeature([userCredentials]),TypeOrmModule.forFeature([BoardingCheckList]),TypeOrmModule.forFeature([SalaryInfo]),TypeOrmModule.forFeature([AnnouncementInfo]),AuthModule,EmailModule],
   controllers: [HrController],
   providers: [HrService],
 })
