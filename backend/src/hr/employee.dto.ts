@@ -24,26 +24,29 @@ export class employeeData{
     email:string;
 
     @IsNotEmpty({ message: 'gender cannot be empty' })
-    @IsEnum(Gender,{ message: 'Invalid Gender' })
     @Transform(({ value }) => (typeof value === 'string' ? value.toLowerCase() : value), { toClassOnly: true })
+    @IsEnum(Gender,{ message: 'Invalid Gender' })
+   
     gender:Gender;
 
     @IsNotEmpty({ message: 'Status cannot be empty' })
-    @IsEnum(Status,{ message: 'Invalid Status' })
     @Transform(({ value }) => (typeof value === 'string' ? value.toLowerCase() : value), { toClassOnly: true })
+    @IsEnum(Status,{ message: 'Invalid Status' })
     status:Status;
 
     @IsNotEmpty({ message: 'joining date cannot be empty' })
-    @IsDate()
     @Type(() => Date)
+    @IsDate()
     joindate:Date;
 
     @IsNumber()
+    @Transform(({ value }) => Number(value), { toClassOnly: true })
     @IsNotEmpty({ message: 'salary cannot be empty' })
     @Min(0)
     salary:number;
 
     @IsNumber()
+    @Transform(({ value }) => Number(value), { toClassOnly: true })
     @IsNotEmpty({ message: 'salary cannot be empty' })
     @Min(0)
     age:number;

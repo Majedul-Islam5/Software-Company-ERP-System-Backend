@@ -1,4 +1,4 @@
-import { Controller, Get ,Post,Delete,Put,Patch, Param,Query, Body, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
+import { Controller, Get ,Post,Delete,Put,Patch, Param,Query, Body, ParseIntPipe, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, UseGuards, Res, Req, BadRequestException } from '@nestjs/common';
 import { HrService } from './hr.service';
 import { employeeData, Status } from './employee.dto';
 import { employeeUpdate } from './employeeUpdate.dto';
@@ -13,19 +13,42 @@ import { announcementUpdate } from './announcementUpdate.dto';
 import { AuthGuard } from './auth/auth.guard';
 import { EmailData } from './email/email.dto';
 import { userInformationUpdate } from './userInfoUpdate.dto';
+import type { Response } from 'express';
 
 @Controller("hr")
 export class HrController{
   constructor(private readonly hrService: HrService){}
 
+  @Get('dashboard')
+    @UseGuards(AuthGuard)
+    dashTest(){
+        return this.hrService.dashTest();
+    }
+
   @Post("signIn")
-  signIn(@Body() info:userInformation):object{
-    return this.hrService.signIn(info);
+  async signIn(@Body() info:{email:string,password:string},@Res({ passthrough: true }) res: Response){
+    const result = await this.hrService.signIn(info);
+    res.cookie("access_token", result.access_token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,   // true for production HTTPS
+    path: '/',
+    maxAge: 300 * 60 * 1000 // 300 mins
+  });
+
+  return { message: "Login successful" };
   }
 
   @Post("logout")
-  logout(@Body() info:userInformation):object{
-    return this.hrService.logout(info);
+  logout(@Res({ passthrough: true }) res: Response){
+    res.clearCookie("access_token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,
+    path: "/",
+    });
+
+    return { message: "Logged out successfully" };
   }
 
   /*{
@@ -42,14 +65,15 @@ export class HrController{
 
 
   @Post('email')
+  @UseGuards(AuthGuard)
   sendEmail(@Body() mail:EmailData):object{
     return this.hrService.sendEmail(mail);
   }
 
   @Get("employee")
   @UseGuards(AuthGuard)
-  getEmployee():object{
-    return this.hrService.getEmployee();
+  getEmployee(@Query('id') id: string):object{
+    return this.hrService.getEmployee(id);
   }
 
   @Get("employee/:id")
@@ -65,10 +89,11 @@ export class HrController{
   }
 
 
-  @Post("announcements/:id")
+  @Post("announcements")
   @UseGuards(AuthGuard)
-  createAnnouncements(@Param('id',ParseIntPipe) id:number,@Body() announce:announcementData):object{  
-    return this.hrService.createAnnouncements(id,announce);
+  createAnnouncements(@Body() announce:announcementData,@Req() req: Request):object{
+    const userId = (req as any).user.id;
+    return this.hrService.createAnnouncements(userId,announce);
   }
 
   @Get("announcements/:id")
@@ -91,7 +116,23 @@ export class HrController{
 
   @Post("employee")
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    exceptionFactory: (errors) => {
+      console.log(' Validation Errors:');
+
+      errors.forEach(err => {
+        console.log('Field:', err.property);
+        console.log('Constraints:', err.constraints);
+        console.log('Value:', err.value);
+        console.log('Type:', typeof err.value);
+        console.log('----------------------');
+      });
+
+      return new BadRequestException(errors);
+    },
+  }),)
   @UseInterceptors(FileInterceptor('file',
   {fileFilter: (req , file , cb )=>{
       if(file.originalname.match(/\.(jpg|webp|png|jpeg)$/))
@@ -101,7 +142,7 @@ export class HrController{
         cb(new MulterError('LIMIT_UNEXPECTED_FILE', ' image'), false);
       }
   },
-  limits:{ fileSize: 3000000},
+  limits:{ fileSize: 3000000000},
     storage: diskStorage({
     destination: './src/hr/assets',
     filename: function(req , file , cb ){
@@ -113,11 +154,26 @@ export class HrController{
     return this.hrService.createEmp(empData,file);
   }
 
+
+  @Get("img/:name")
+  viewImage(@Param('name') name, @Res() res)
+  {
+      res.sendFile(name,{root:'./src/hr/assets'});
+  }
+
+
   @Post("employeeCredential/:id")
-  @UseGuards(AuthGuard)
+  //@UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
   createEmpCredential(@Param('id',ParseIntPipe) id:number,@Body() empCred:userInformation):object{  
     return this.hrService.createEmpCredential(id,empCred);
+  }
+
+  @Get("employeeCredential/:id")
+  //@UseGuards(AuthGuard)
+  @UsePipes(new ValidationPipe())
+  showEmpCredential(@Param('id',ParseIntPipe) id:number):object{  
+    return this.hrService.showEmpCredential(id);
   }
 
   @Put("employeeCredential/:id")

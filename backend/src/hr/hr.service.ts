@@ -20,6 +20,7 @@ import { JwtService } from '@nestjs/jwt';
 import { EmailService } from './email/email.service';
 import { EmailData } from './email/email.dto';
 import { userInformationUpdate } from './userInfoUpdate.dto';
+import Pusher from 'pusher';
 
 @Injectable()
 export class HrService {
@@ -33,8 +34,13 @@ export class HrService {
   private jwtService:JwtService,
   private readonly emailService:EmailService
   ){}
+  private pusher: Pusher;
 
-  async signIn(info:userInformation):Promise<{ access_token: string }>{
+  dashTest(){
+        return {message:"working"};
+    }
+
+  async signIn(info:{email:string,password:string}):Promise<{ access_token: string }>{
     const {email,password}=info;
     const user=await this.userCredent.findOneBy({email:email})
     if(!user){
@@ -66,13 +72,17 @@ export class HrService {
     return this.emailService.sendEmail(to,subject,message);
   }
 
-  async getEmployee(): Promise<employeeData[]> {
-    try{
-      return this.employeeInfoRepo.find();
+  async getEmployee(id:string): Promise<employeeData[]> {
+
+    if (!id) {
+    return this.employeeInfoRepo.find(); 
     }
-    catch(error){
-      throw new error("Error occured");
-    }
+
+    return this.employeeInfoRepo
+    .createQueryBuilder('user')
+    .where('CAST(user.id AS TEXT) LIKE :id', { id: `${id}%` })
+    .getMany();
+
     
   }
 
@@ -97,7 +107,8 @@ export class HrService {
     
   }
 
-  async createEmpCredential(id:number,empCred:userInformation):Promise<userInformation>{  
+  async createEmpCredential(id:number,empCred:userInformation):Promise<userInformation>{
+    console.log(id);  
     const emp=await this.employeeInfoRepo.findOneBy({id:id});
     if(!emp){
       throw new NotFoundException('Employee ID does not exist')
@@ -112,6 +123,14 @@ export class HrService {
     catch(error){
       throw new BadRequestException("Same email already exists");
     }
+  }
+
+  async showEmpCredential( id:number):Promise<userInformation|null>{  
+    const empCreden=await this.userCredent.findOneBy({employeeInfo:{id:id}});
+    if(!empCreden){
+      return null
+    }
+    return this.userCredent.findOneBy({id:empCreden.id});
   }
 
   async updateEmpCredential(id:number,empCredUpdate:userInformationUpdate):Promise<userInformation|null>{  
@@ -268,7 +287,12 @@ export class HrService {
   }
 
   async createAnnouncements(id:number,announce:announcementData):Promise<announcementData>{
-    const emp=await this.employeeInfoRepo.findOneBy({id:id});
+    const empCheck=await this.userCredent.findOne({where:{ id: id},relations: ['employeeInfo'],
+    });
+    if (!empCheck) {
+      throw new NotFoundException('User credential not found');
+    }
+    const emp=await this.employeeInfoRepo.findOneBy({id:empCheck.employeeInfo.id});
     if(!emp){
       throw new NotFoundException('Employee ID does not exist')
     }
@@ -277,6 +301,22 @@ export class HrService {
       throw new BadRequestException("Only hr to post annoucement")
     }
     const announcement=await this.announcementInfo.create({...announce,hrInfo:emp});
+
+    this.pusher = new Pusher({
+      appId: "2096912",
+      key: "d6153f5d379f974890d0",
+      secret: "9b5cce8ea15b2d4d887a",
+      cluster: "mt1",
+      useTLS: false,
+    });
+
+
+    this.pusher.trigger("notice-channel", "notice-event",{
+    subject: announce.subject, 
+    message: announce.message,  
+  });
+
+
     return this.announcementInfo.save(announcement);
   }
 
