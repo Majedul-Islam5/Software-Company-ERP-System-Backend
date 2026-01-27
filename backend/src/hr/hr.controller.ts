@@ -77,8 +77,9 @@ export class HrController{
   }
 
   @Get("employee/:id")
-  @UseGuards(AuthGuard)
+  //@UseGuards(AuthGuard)
   getEmployeeById(@Param('id',ParseIntPipe) id:number):object{
+    console.log(id);
     return this.hrService.getEmployeeById(id);
   }
 
