@@ -3,24 +3,29 @@
 import { useEffect, useState } from "react";
 import axios, { AxiosError } from "axios";
 import ButtonUI from "./buttonUI";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import LoadingView from "@/app/components/loadingPage";
 
-export default function Page({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function Page() {
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string | undefined;
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) return; // ✅ don’t call backend with undefined
+
     const fetchEmployee = async () => {
       setLoading(true);
+      setError(null);
+
       try {
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_API_ENDPOINT}/hr/employee/${id}`,
-          { withCredentials: true } // ✅ cookie sent automatically
+          { withCredentials: true }
         );
         setData(res.data);
       } catch (err) {
@@ -34,9 +39,10 @@ export default function Page({ params }: { params: { id: string } }) {
     fetchEmployee();
   }, [id]);
 
-  if (loading) {
-    return <LoadingView />;
-  }
+  // while id is not ready
+  if (!id) return <LoadingView />;
+
+  if (loading) return <LoadingView />;
 
   if (error) {
     return (
