@@ -30,8 +30,8 @@ export class HrController{
     const result = await this.hrService.signIn(info);
     res.cookie("access_token", result.access_token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false,   // true for production HTTPS
+    sameSite: "none",
+    secure: true,   // true for production HTTPS
     path: '/',
     maxAge: 300 * 60 * 1000 // 300 mins
   });
