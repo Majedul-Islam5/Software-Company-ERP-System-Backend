@@ -154,14 +154,13 @@ export class HrController{
     return this.hrService.createEmp(empData,file);
   }
 
-
+*/
   @Get("img/:name")
   viewImage(@Param('name') name, @Res() res)
   {
       res.sendFile(name,{root:'./src/hr/assets'});
   }
 
-*/
   @Post("employeeCredential/:id")
   //@UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
