@@ -66,7 +66,7 @@ export class ProjectManagerController {
       },
       limits: { fileSize: 1024*1024*10 }, 
       storage: diskStorage({
-        destination: './srs-report',
+        destination: '/tmp',
         filename: (req, file, cb) => {
           const uniqueSuffix = Date.now() + '-' + file.originalname;
           cb(null, uniqueSuffix);
