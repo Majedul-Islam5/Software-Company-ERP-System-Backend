@@ -113,7 +113,7 @@ export class HrController{
   deleteAnnouncements(@Param('id',ParseIntPipe) id:number):object{  
     return this.hrService.deleteAnnouncements(id);
   }
-
+/*
   @Post("employee")
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe({
@@ -161,7 +161,7 @@ export class HrController{
       res.sendFile(name,{root:'./src/hr/assets'});
   }
 
-
+*/
   @Post("employeeCredential/:id")
   //@UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
