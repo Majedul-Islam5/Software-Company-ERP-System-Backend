@@ -71,7 +71,7 @@ export class HrController{
   }
 
   @Get("employee")
-  @UseGuards(AuthGuard)
+  //@UseGuards(AuthGuard)
   getEmployee(@Query('id') id: string):object{
     return this.hrService.getEmployee(id);
   }
