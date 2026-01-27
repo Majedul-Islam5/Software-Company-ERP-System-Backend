@@ -1,36 +1,35 @@
-import { cookies } from "next/headers";
+"use client";
+
+import { useEffect, useState } from "react";
+import axios from "axios";
 import ButtonUI from "./buttonUI";
 
-async function getData(id: string) {
-  const token = (await cookies()).get("access_token")?.value;
+export default function Page({ params }: { params: { id: string } }) {
+  const { id } = params;
 
-  if (!token) {
-    throw new Error("No access token cookie found");
-  }
+  const [data, setData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const api = process.env.NEXT_PUBLIC_API_ENDPOINT; // ok if it's set in Vercel for the frontend project
-  if (!api) throw new Error("NEXT_PUBLIC_API_ENDPOINT is not set");
+  useEffect(() => {
+    const api = process.env.NEXT_PUBLIC_API_ENDPOINT;
+    if (!api) {
+      setError("NEXT_PUBLIC_API_ENDPOINT is not set");
+      return;
+    }
 
-  const res = await fetch(`${api}/hr/employee/${id}`, {
-    headers: {
-      Cookie: `access_token=${token}`,
-    },
-    cache: "no-store",
-  });
+    axios
+      .get(`${api}/hr/employee/${id}`, {
+        withCredentials: true, // ✅ sends httpOnly cookie to backend
+      })
+      .then((res) => setData(res.data))
+      .catch((err) => {
+        // optional: show backend message if available
+        setError(err?.response?.data?.message || "Failed to load employee data");
+      });
+  }, [id]);
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Backend error ${res.status}: ${text}`);
-  }
+  if (error) return <div>{error}</div>;
+  if (!data) return <div>Loading...</div>;
 
-  return res.json();
-}
-
-export default async function Page({ params }: { params: { id: string } }) {
-  try {
-    const data = await getData(params.id);
-    return <ButtonUI data={data} />;
-  } catch (err) {
-    return <div>Failed to load employee data</div>;
-  }
+  return <ButtonUI data={data} />;
 }
