@@ -14,7 +14,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { EmailData } from './email/email.dto';
 import { userInformationUpdate } from './userInfoUpdate.dto';
 import type { Response } from 'express';
-import { storage } from 'src/cloudinary/cloudinary.storage';
+import { storage } from '../cloudinary/cloudinary.storage';
 
 @Controller("hr")
 export class HrController{
