@@ -97,7 +97,7 @@ export class HrService {
   }
 
   async createEmp(empData:employeeData,file: Express.Multer.File):Promise<employeeData>{
-    const empInfo=this.employeeInfoRepo.create({...empData,userImage:file.filename})
+    const empInfo=this.employeeInfoRepo.create({...empData,userImage:file.path})
     try{
       return await this.employeeInfoRepo.save(empInfo);
     }

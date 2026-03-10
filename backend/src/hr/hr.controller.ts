@@ -14,6 +14,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { EmailData } from './email/email.dto';
 import { userInformationUpdate } from './userInfoUpdate.dto';
 import type { Response } from 'express';
+import { storage } from 'src/cloudinary/cloudinary.storage';
 
 @Controller("hr")
 export class HrController{
@@ -156,6 +157,31 @@ export class HrController{
   }
 
 */
+
+@Post("employee")
+@UseGuards(AuthGuard)
+@UsePipes(new ValidationPipe())
+@UseInterceptors(
+  FileInterceptor('file', {
+    storage,
+    fileFilter: (req, file, cb) => {
+      if (file.originalname.match(/\.(jpg|webp|png|jpeg)$/)) {
+        cb(null, true);
+      } else {
+        cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
+      }
+    },
+    limits: { fileSize: 3000000000 },
+  }),
+)
+createEmp(
+  @Body() empData: employeeData,
+  @UploadedFile() file: Express.Multer.File,
+): object {
+  return this.hrService.createEmp(empData, file);
+}
+
+
   @Get("img/:name")
   viewImage(@Param('name') name, @Res() res)
   {

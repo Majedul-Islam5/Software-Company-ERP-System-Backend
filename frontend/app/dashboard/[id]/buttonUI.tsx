@@ -45,7 +45,8 @@ export default function ButtonUI({ data }: { data: any }){
       <div className="flex items-center gap-6">
         <div className="h-32 w-32 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl flex-shrink-0 transition-transform hover:scale-105 duration-300">
           <img 
-            src={process.env.NEXT_PUBLIC_API_ENDPOINT+`/hr/img/`+employee.userImage} 
+            // src={process.env.NEXT_PUBLIC_API_ENDPOINT+`/hr/img/`+employee.userImage}
+            src={employee.userImage}
             alt={employee.fullname} 
             className="h-full w-full object-cover"
           />
