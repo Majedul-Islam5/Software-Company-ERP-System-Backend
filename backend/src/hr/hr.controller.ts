@@ -159,7 +159,7 @@ export class HrController{
   @Get("img/:name")
   viewImage(@Param('name') name, @Res() res)
   {
-      res.sendFile(name,{root:'./src/hr/assets'});
+      res.sendFile(name,{root:'./assets'});
   }
 
   @Post("employeeCredential/:id")
