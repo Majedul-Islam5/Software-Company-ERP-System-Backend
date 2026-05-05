@@ -1,20 +1,15 @@
 import { NestFactory } from '@nestjs/core';
+import { AppModule } from '../src/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { DebugFilter } from '../src/hr/debug.filter';
 
-import serverless from 'serverless-http';
+let cachedApp: any;
 
-let cachedHandler: any;
+async function bootstrap() {
+  if (cachedApp) return cachedApp;
 
-import { Module } from '@nestjs/common';
-
-@Module({})
-class TestModule {}
-
-async function getApp() {
-  if (cachedHandler) return cachedHandler;
-
-  const app = await NestFactory.create(TestModule);
+  const app = await NestFactory.create(AppModule);
 
   app.use(cookieParser());
 
@@ -31,16 +26,19 @@ async function getApp() {
     }),
   );
 
+  // KEEP FILTER REMOVED FOR NOW
+  // app.useGlobalFilters(new DebugFilter());
+
   await app.init();
 
   const expressApp = app.getHttpAdapter().getInstance();
 
-  cachedHandler = serverless(expressApp);
+  cachedApp = expressApp;
 
-  return cachedHandler;
+  return cachedApp;
 }
 
 export default async function handler(req: any, res: any) {
-  const app = await getApp();
+  const app = await bootstrap();
   return app(req, res);
 }
