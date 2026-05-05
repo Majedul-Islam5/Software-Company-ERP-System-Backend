@@ -159,7 +159,7 @@ export class HrController{
 */
 
 @Post("employee")
-@UseGuards(AuthGuard)
+//@UseGuards(AuthGuard)
 @UsePipes(new ValidationPipe())
 @UseInterceptors(
   FileInterceptor('file', {
