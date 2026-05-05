@@ -11,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [ConfigModule.forRoot({
       isGlobal: true,
-    }), HrModule, ProjectManagerModule, adminModule,/*TypeOrmModule.forRoot(
+    }), HrModule, ProjectManagerModule, adminModule,TypeOrmModule.forRoot(
   { type:'postgres',
     host:process.env.DB_HOST,
     port:6543,
@@ -23,8 +23,13 @@ import { ConfigModule } from '@nestjs/config';
 
     autoLoadEntities:true,
     synchronize:true,
+    retryAttempts: 3,
+    retryDelay: 3000,
+    extra: {
+    connectionTimeoutMillis: 5000,
+  },
   }
-),*/],
+),],
   controllers: [AppController, ProjectManagerController],
   providers: [AppService, ProjectManagerService],
 })
