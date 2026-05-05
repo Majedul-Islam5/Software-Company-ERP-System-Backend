@@ -22,7 +22,7 @@ import { ConfigModule } from '@nestjs/config';
     ssl: {rejectUnauthorized: false,},
 
     autoLoadEntities:true,
-    synchronize:true,
+    synchronize:false,
     retryAttempts: 3,
     retryDelay: 3000,
     extra: {
